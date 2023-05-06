@@ -1,0 +1,34 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Azure Container Registry Build
+      uses: Azure/acr-build@v1
+      with:
+        # Service Principal with Contributor role on the ACR
+        service_principal: 017b07fc-f045-48bb-8488-7d2da96a8abf
+        # Service Principal password
+        service_principal_password: ${{secrets.SERVICEPRINCIPAL_PASSWORD}}
+        # Azure Container Registry tenant
+        tenant: af923aa8-6f6e-43d9-8a46-3aee7742829a
+        # The name of the ACR, minus the .azurecr.io
+        registry: konbamwaprojects
+        # Repository to use
+        repository: masteryapp
+        # Github access token for private repositories
+        git_access_token: ${{ secrets.GITHUB_TOKEN }}
+        # Docker image name
+        tag: latest
+        # Branch to build from, defaults to master
+        branch: main
+        # The folder in the Github repo that holds the source
+        folder: backend
