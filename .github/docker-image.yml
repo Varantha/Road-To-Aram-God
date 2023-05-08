@@ -23,7 +23,7 @@ jobs:
         # The name of the ACR, minus the .azurecr.io
         registry: konbamwaprojects
         # Repository to use
-        repository: masteryapp
+        repository: rtag
         # Github access token for private repositories
         git_access_token: ${{ secrets.GITHUB_TOKEN }}
         # Docker image name
