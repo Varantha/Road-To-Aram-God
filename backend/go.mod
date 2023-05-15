@@ -1,4 +1,4 @@
-module github.com/Varantha/blubby-master
+module github.com/Varantha/Road-To-Aram-God
 
 go 1.18
 

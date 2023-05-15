@@ -254,7 +254,7 @@ func getCombinedChallengeInfo(api *RiotGamesAPI, c *gin.Context) {
 	c.JSON(http.StatusOK, CategorisedChallenges)
 }
 
-func sortChallengesIntoCategories(challengesInfo []ChallengesInfoReturn, challenges GetChallengesReturn, challengeInputCategories []inputChallengeCategory, langCode string) []ChallengeCategory {
+func sortChallengesIntoCategories(challengesInfo []ChallengesInfoReturn, playerChallenges GetChallengesReturn, challengeInputCategories []inputChallengeCategory, langCode string) []ChallengeCategory {
 
 	var challengeOutputCategories []ChallengeCategory
 
@@ -262,18 +262,25 @@ func sortChallengesIntoCategories(challengesInfo []ChallengesInfoReturn, challen
 		newChallengeCategory := ChallengeCategory{
 			CategoryName: category.CategoryName,
 		}
-		for _, challenge := range challenges.Challenges {
-			for _, challengeInfo := range challengesInfo {
+		for _, challengeInfo := range challengesInfo {
+			matchFound := false
+			for _, challenge := range playerChallenges.Challenges {
 				if challenge.ChallengeID == challengeInfo.ID {
+					matchFound = true
 					if challengeInfo.LocalizedNames[langCode].Name == category.ChallengeName {
 						challengeDetail := populateChallengeDetails(challengeInfo, challenge, langCode)
 						newChallengeCategory.CategoryChallenge = challengeDetail
-						break
 					} else if StringInSlice(challengeInfo.LocalizedNames[langCode].Name, category.ChallengeNames) {
 						challengeDetail := populateChallengeDetails(challengeInfo, challenge, langCode)
 						newChallengeCategory.Challenges = append(newChallengeCategory.Challenges, challengeDetail)
-						break
 					}
+					break
+				}
+			}
+			if !matchFound {
+				if StringInSlice(challengeInfo.LocalizedNames[langCode].Name, category.ChallengeNames) {
+					challengeDetail := populateBlankChallenge(challengeInfo, langCode)
+					newChallengeCategory.Challenges = append(newChallengeCategory.Challenges, challengeDetail)
 				}
 			}
 		}
@@ -285,7 +292,7 @@ func sortChallengesIntoCategories(challengesInfo []ChallengesInfoReturn, challen
 
 func populateChallengeDetails(challengeInfo ChallengesInfoReturn, challengeData Challenge, langCode string) ChallengeDetail {
 	return ChallengeDetail{
-		ChallengeID:               challengeData.ChallengeID,
+		ChallengeID:               challengeInfo.ID,
 		ChallengeName:             challengeInfo.LocalizedNames[langCode].Name,
 		ChallengeDescription:      challengeInfo.LocalizedNames[langCode].Description,
 		ChallengeShortDescription: challengeInfo.LocalizedNames[langCode].ShortDescription,
@@ -295,6 +302,22 @@ func populateChallengeDetails(challengeInfo ChallengesInfoReturn, challengeData 
 		AchievedTime:              challengeData.AchievedTime,
 		Position:                  challengeData.Position,
 		PlayersInLevel:            challengeData.PlayersInLevel,
+		Thresholds:                challengeInfo.Thresholds,
+	}
+}
+
+func populateBlankChallenge(challengeInfo ChallengesInfoReturn, langCode string) ChallengeDetail {
+	return ChallengeDetail{
+		ChallengeID:               challengeInfo.ID,
+		ChallengeName:             challengeInfo.LocalizedNames[langCode].Name,
+		ChallengeDescription:      challengeInfo.LocalizedNames[langCode].Description,
+		ChallengeShortDescription: challengeInfo.LocalizedNames[langCode].ShortDescription,
+		Percentile:                0,
+		Level:                     "NONE",
+		Value:                     0,
+		AchievedTime:              0,
+		Position:                  0,
+		PlayersInLevel:            0,
 		Thresholds:                challengeInfo.Thresholds,
 	}
 }
